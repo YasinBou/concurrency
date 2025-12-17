@@ -172,3 +172,93 @@ Thread-1 printing: 10
 Thread-0 printing: 10
 ```
 ---
+
+### 3.Thread lifecycle
+
+In java, a thread goes through multiple states.
+* **New:** A new thread has been created but has not been started yet.
+* **Runnable:** The thread is ready to run or is running.
+* **Blocked/Waiting:** The thread is waiting for a resource or monitor lock.
+* **Timed waiting:** The thread is waiting because a timeout method of some sorts has been called, for example; sleep().
+* **Terminated:** The thread has been terminated or completed its execution.
+
+Understand these concepts helps with managing threads effectively.
+---
+
+### 4. Synchronization
+When several threads operate on the same shared resource (such as a counter), they may conflict
+with one another, leading to race conditions or unpredictable outcomes. Synchronization prevents this
+by allowing only a single thread to execute the critical portion of code at any given moment.
+In java, this behavior is achieved using the **synchronized** keyword.
+
+**Synchronized methods**<br>
+The **synchronized** keyword will ensure that only thread executes a method at a time.
+
+```java
+public class Counter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public synchronized int getCount() {
+        return this.count;
+    }
+}
+```
+```java
+private static void implementSynchronization() throws InterruptedException {
+    Counter counter = new Counter();
+
+    Runnable task = () -> {
+        for (int i = 0; i < 1000; i++) {
+            counter.increment();
+        }
+    };
+
+    Thread threadOne = new Thread(task);
+    Thread threadTwo = new Thread(task);
+
+    threadOne.start();
+    threadTwo.start();
+
+    threadOne.join();
+    threadTwo.join();
+
+    System.out.println("Final count: " + counter.getCount());
+}
+```
+
+**Explanation:**<br>
+The increment() method is now synchronized, which means that it will now ensure thread-safe updates.
+Without synchronization, the output will likely be less than 2000 due to **race conditions**.
+Our solution will ensure that our output remains consistent. join() makes the main thread
+wait for threadOne and threadTwo to finish before it continues,
+
+**Synchronized blocks**<br>
+If you prefer more flexibility and finer control, you can use synchronized blocks to
+lock specific parts of your methods.
+
+```java
+public class CounterLock {
+    private int count = 0;
+    private final Object lock = new Object();
+
+    public void increment() {
+        synchronized (lock) {
+            count++;
+        }
+    }
+
+    public int getCount() {
+        synchronized (lock) {
+            return count;
+        }
+    }
+}
+```
+
+Now you know that the synchronized lock ensures that only one thread can modify the count at a time!
+
+---
